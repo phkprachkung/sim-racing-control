@@ -10,7 +10,7 @@
     :root {
         --bg-deep: #0d0d0d;
         --bg-panel: #141414;
-        --bg-card: #1a1a1a;
+        --bg-card: #1e1e1e;
         --accent: #E4002B;
         --accent-dim: #8B0018;
         --text-main: #FFFFFF;
@@ -21,6 +21,8 @@
 
     * {
         box-sizing: border-box;
+        margin: 0;
+        padding: 0;
         user-select: none;
         -webkit-user-select: none;
         -webkit-tap-highlight-color: transparent;
@@ -32,12 +34,19 @@
         background-color: var(--bg-deep);
         color: var(--text-main);
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        display: flex;
-        flex-direction: column;
         height: 100vh;
         width: 100vw;
         overflow: hidden;
         touch-action: manipulation;
+    }
+
+    /* Fullscreen App Container */
+    #app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        position: relative;
     }
 
     /* Header */
@@ -45,33 +54,34 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 20px;
+        padding: 10px 16px;
         background-color: var(--bg-panel);
         border-bottom: 2px solid var(--accent);
+        z-index: 10;
         flex-shrink: 0;
+    }
+
+    .title-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
 
     .title {
         font-weight: bold;
-        font-size: 1.1rem;
+        font-size: 1rem;
         letter-spacing: 1px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
     }
 
     .btn-fullscreen {
         background: var(--bg-card);
         border: 1px solid var(--border);
         color: var(--text-main);
-        padding: 6px 14px;
+        padding: 5px 12px;
         border-radius: 6px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         font-weight: bold;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 6px;
         transition: all 0.1s;
     }
 
@@ -80,12 +90,26 @@
         border-color: var(--accent);
     }
 
-    .status {
+    .status-group {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 0.85rem;
+        gap: 12px;
+        font-size: 0.8rem;
         color: var(--text-sub);
+    }
+
+    .sensor-badge {
+        font-size: 0.7rem;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: var(--bg-card);
+        color: var(--text-sub);
+        border: 1px solid var(--border);
+    }
+    .sensor-badge.active {
+        color: var(--green);
+        border-color: var(--green);
     }
 
     .status-dot {
@@ -100,46 +124,52 @@
         box-shadow: 0 0 8px var(--green);
     }
 
-    /* Main Content */
-    .main {
+    /* Main Area Layout */
+    .main-grid {
         flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-around;
-        padding: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1.2fr 1.4fr;
+        grid-template-rows: 1fr 1.2fr;
+        gap: 12px;
+        padding: 12px 16px;
         position: relative;
     }
 
-    /* Steering Angle & Bar */
-    .steering-section {
+    /* Steering Display (Left / Center Top) */
+    .steering-card {
+        grid-column: 1 / 3;
+        grid-row: 1 / 2;
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        width: 100%;
-        max-width: 500px;
+        justify-content: center;
+        padding: 12px;
+        position: relative;
     }
 
     .angle-text {
         font-family: 'Consolas', monospace;
-        font-size: 2.8rem;
+        font-size: 2.5rem;
         font-weight: bold;
         color: var(--accent);
         text-shadow: 0 0 15px rgba(228, 0, 43, 0.4);
-        margin-bottom: 12px;
+        margin-bottom: 8px;
     }
 
-    .steering-container {
-        width: 90%;
+    .steering-bar-track {
+        width: 85%;
         height: 16px;
-        background-color: var(--bg-panel);
+        background-color: var(--bg-deep);
         border-radius: 8px;
         position: relative;
         box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
         border: 1px solid var(--border);
     }
 
-    .steering-center {
+    .steering-center-mark {
         position: absolute;
         top: 0;
         bottom: 0;
@@ -158,24 +188,31 @@
         background-color: var(--accent);
         border-radius: 50%;
         transform: translateX(-50%);
-        transition: left 0.05s ease-out;
+        transition: left 0.03s linear;
         box-shadow: 0 0 12px var(--accent);
     }
 
-    /* Gear Controls */
-    .controls {
+    /* Touch Steering Helper Area (Left Bottom) */
+    .touch-steer-card {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+        background: var(--bg-panel);
+        border: 1px dashed var(--border);
+        border-radius: 16px;
         display: flex;
-        width: 100%;
-        max-width: 600px;
+        flex-direction: column;
+        align-items: center;
         justify-content: center;
-        gap: 24px;
-        flex: 1;
-        max-height: 220px;
-        margin-top: 10px;
+        color: var(--text-sub);
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 1px;
     }
 
-    .gear-btn {
-        flex: 1;
+    /* Shift Up Button (Top Right) */
+    #btnGearUp {
+        grid-column: 3 / 4;
+        grid-row: 1 / 2;
         background-color: var(--bg-panel);
         border: 2px solid var(--border);
         border-radius: 20px;
@@ -183,15 +220,34 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        font-size: 3.5rem;
+        font-size: 3rem;
         font-weight: bold;
-        color: var(--text-sub);
-        transition: all 0.08s ease;
+        color: var(--text-main);
         cursor: pointer;
         box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        transition: all 0.08s ease;
     }
 
-    .gear-btn span.label {
+    /* Shift Down Button (Bottom Middle-Right) */
+    #btnGearDown {
+        grid-column: 2 / 4;
+        grid-row: 2 / 3;
+        background-color: var(--bg-panel);
+        border: 2px solid var(--border);
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: bold;
+        color: var(--text-main);
+        cursor: pointer;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        transition: all 0.08s ease;
+    }
+
+    .btn-label {
         font-size: 0.85rem;
         font-weight: 600;
         letter-spacing: 2px;
@@ -199,16 +255,12 @@
         margin-top: 4px;
     }
 
-    .gear-btn:active, .gear-btn.active {
-        background-color: var(--accent-dim);
-        color: var(--text-main);
-        border-color: var(--accent);
+    .btn-active, .gear-btn:active {
+        background-color: var(--accent-dim) !important;
+        color: var(--text-main) !important;
+        border-color: var(--accent) !important;
         transform: scale(0.96);
-        box-shadow: 0 0 20px rgba(228, 0, 43, 0.5);
-    }
-
-    .gear-btn:active span.label, .gear-btn.active span.label {
-        color: var(--text-main);
+        box-shadow: 0 0 20px rgba(228, 0, 43, 0.6) !important;
     }
 
     /* Start Overlay */
@@ -221,7 +273,7 @@
         align-items: center;
         justify-content: center;
         z-index: 100;
-        backdrop-filter: blur(5px);
+        backdrop-filter: blur(6px);
     }
 
     .btn-start {
@@ -237,198 +289,271 @@
         box-shadow: 0 0 20px rgba(228, 0, 43, 0.6);
         transition: background 0.15s;
     }
-    
+
     .btn-start:active {
         background-color: var(--accent-dim);
     }
-
 </style>
 </head>
 <body>
 
+<div id="app-container">
+    <!-- Header Bar -->
     <header>
-        <div class="title">
-            <span>MOBILE WHEEL</span>
+        <div class="title-group">
+            <span class="title">MOBILE WHEEL</span>
             <button id="btnFullscreen" class="btn-fullscreen">⛶ FULLSCREEN</button>
         </div>
-        <div class="status">
+        <div class="status-group">
+            <div id="sensorBadge" class="sensor-badge">GYRO: DETECTING...</div>
             <div id="statusDot" class="status-dot"></div>
             <span id="statusText">DISCONNECTED</span>
         </div>
     </header>
 
-    <div class="main">
-        <!-- Start Overlay -->
+    <!-- Main Grid Layout -->
+    <div class="main-grid">
+        <!-- Start Permission Overlay -->
         <div id="overlay" class="overlay">
             <p style="margin-bottom: 24px; text-align: center; color: var(--text-sub); line-height: 1.6;">
-                Tap below to enable Gyroscope & Connection<br>
-                (Hold phone horizontally like a steering wheel)
+                Tap START to enable Steering Gyroscope & Connect<br>
+                (Rotate phone like a steering wheel to turn)
             </p>
             <button id="btnStart" class="btn-start">START DRIVING</button>
         </div>
 
-        <!-- Steering Readout -->
-        <div class="steering-section">
+        <!-- Steering Readout Card -->
+        <div class="steering-card">
             <div id="angleText" class="angle-text">0.0°</div>
-            <div class="steering-container">
-                <div class="steering-center"></div>
+            <div class="steering-bar-track">
+                <div class="steering-center-mark"></div>
                 <div id="steerIndicator" class="steering-indicator"></div>
             </div>
         </div>
 
-        <!-- Gear Shift Buttons -->
-        <div class="controls">
-            <div id="btnGearDown" class="gear-btn">
-                −
-                <span class="label">SHIFT DOWN</span>
-            </div>
-            <div id="btnGearUp" class="gear-btn">
-                +
-                <span class="label">SHIFT UP</span>
-            </div>
+        <!-- Touch Steering Fallback Area -->
+        <div class="touch-steer-card" id="touchSteerArea">
+            <span>TOUCH / DRAG</span>
+            <span style="font-size:0.65rem; color: #555; margin-top:4px;">TO STEER IF GYRO OFF</span>
+        </div>
+
+        <!-- SHIFT UP Button (Top Right) -->
+        <div id="btnGearUp">
+            +
+            <span class="btn-label">SHIFT UP</span>
+        </div>
+
+        <!-- SHIFT DOWN Button (Bottom Middle-Right) -->
+        <div id="btnGearDown">
+            −
+            <span class="btn-label">SHIFT DOWN</span>
         </div>
     </div>
+</div>
 
-    <script>
-        let ws = null;
-        let isConnected = false;
-        let steeringAngle = 0;
-        const MAX_STEER_ANGLE = 90; // degrees
+<script>
+    let ws = null;
+    let isConnected = false;
+    let steeringAngle = 0;
+    const MAX_STEER_ANGLE = 90; // degrees
 
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
-        const overlay = document.getElementById('overlay');
-        const btnStart = document.getElementById('btnStart');
-        const btnFullscreen = document.getElementById('btnFullscreen');
+    let gyroActive = false;
+
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const sensorBadge = document.getElementById('sensorBadge');
+    const overlay = document.getElementById('overlay');
+    const btnStart = document.getElementById('btnStart');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+    
+    const steerIndicator = document.getElementById('steerIndicator');
+    const angleText = document.getElementById('angleText');
+    
+    const btnGearUp = document.getElementById('btnGearUp');
+    const btnGearDown = document.getElementById('btnGearDown');
+    const touchSteerArea = document.getElementById('touchSteerArea');
+
+    let isGearUpPressed = false;
+    let isGearDownPressed = false;
+
+    // Fullscreen Toggle
+    btnFullscreen.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+            document.exitFullscreen().catch(() => {});
+        }
+    });
+
+    // WebSocket Connection
+    function connectWebSocket() {
+        const wsUrl = `ws://${window.location.hostname}:8765`;
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+            isConnected = true;
+            statusDot.classList.add('connected');
+            statusText.innerText = 'CONNECTED';
+            overlay.style.display = 'none';
+        };
+
+        ws.onclose = () => {
+            isConnected = false;
+            statusDot.classList.remove('connected');
+            statusText.innerText = 'DISCONNECTED';
+            setTimeout(connectWebSocket, 1500);
+        };
+
+        ws.onerror = () => {
+            if (ws) ws.close();
+        };
+    }
+
+    // Comprehensive Gyroscope & Motion Sensor Handling
+    function updateSteerAngle(angle) {
+        angle = Math.max(-MAX_STEER_ANGLE, Math.min(MAX_STEER_ANGLE, angle));
+        steeringAngle = angle;
+        updateUI();
+        sendTelemetry();
+    }
+
+    function updateUI() {
+        let percent = ((steeringAngle + MAX_STEER_ANGLE) / (MAX_STEER_ANGLE * 2)) * 100;
+        steerIndicator.style.left = `${percent}%`;
+        angleText.innerText = `${steeringAngle >= 0 ? '+' : ''}${steeringAngle.toFixed(1)}°`;
+    }
+
+    // 1. DeviceOrientation event
+    function handleOrientation(e) {
+        if (e.beta === null && e.gamma === null) return;
         
-        const steerIndicator = document.getElementById('steerIndicator');
-        const angleText = document.getElementById('angleText');
-        
-        const btnGearUp = document.getElementById('btnGearUp');
-        const btnGearDown = document.getElementById('btnGearDown');
+        gyroActive = true;
+        sensorBadge.innerText = 'GYRO: ACTIVE';
+        sensorBadge.classList.add('active');
 
-        let isGearUpPressed = false;
-        let isGearDownPressed = false;
+        let angle = 0;
+        const orient = (screen.orientation || {}).type || '';
+        const winOr = typeof window.orientation !== 'undefined' ? window.orientation : null;
+        const isLandscape = orient.includes('landscape') || (winOr !== null && Math.abs(winOr) === 90);
 
-        // Fullscreen Trigger
-        btnFullscreen.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else {
-                document.exitFullscreen().catch(() => {});
-            }
-        });
-
-        function connectWebSocket() {
-            const wsUrl = `ws://${window.location.hostname}:8765`;
-            ws = new WebSocket(wsUrl);
-
-            ws.onopen = () => {
-                isConnected = true;
-                statusDot.classList.add('connected');
-                statusText.innerText = 'CONNECTED';
-                overlay.style.display = 'none';
-            };
-
-            ws.onclose = () => {
-                isConnected = false;
-                statusDot.classList.remove('connected');
-                statusText.innerText = 'DISCONNECTED';
-                setTimeout(connectWebSocket, 1500);
-            };
-
-            ws.onerror = (err) => {
-                if (ws) ws.close();
-            };
+        if (isLandscape) {
+            angle = e.beta ?? 0;
+            if (orient === 'landscape-secondary' || winOr === -90) angle = -angle;
+        } else {
+            angle = e.gamma ?? 0;
         }
 
-        function handleOrientation(event) {
-            let angle = 0;
-            const orient = (screen.orientation || {}).type || '';
-            const winOr = typeof window.orientation !== 'undefined' ? window.orientation : null;
-            const isLandscape = orient.includes('landscape') || (winOr !== null && Math.abs(winOr) === 90);
+        updateSteerAngle(angle);
+    }
 
-            if (isLandscape) {
-                angle = event.beta ?? 0;
-                if (orient === 'landscape-secondary' || winOr === -90) angle = -angle;
-            } else {
-                angle = event.gamma ?? 0;
-            }
+    // 2. DeviceMotion fallback (Works on HTTP on Android!)
+    function handleMotion(e) {
+        if (gyroActive) return; // Preferred orientation if already working
+        
+        const acc = e.accelerationIncludingGravity;
+        if (!acc || (acc.x === null && acc.y === null)) return;
 
-            // Clamp -90..90
-            angle = Math.max(-MAX_STEER_ANGLE, Math.min(MAX_STEER_ANGLE, angle));
-            steeringAngle = angle;
-            
-            updateUI();
+        sensorBadge.innerText = 'MOTION: ACTIVE';
+        sensorBadge.classList.add('active');
+
+        let x = acc.x || 0;
+        let y = acc.y || 0;
+
+        // Calculate rotation around phone z-axis from gravity vector
+        let rad = Math.atan2(y, x);
+        let deg = rad * (180 / Math.PI);
+
+        // Map gravity angle to -90..90 steering angle
+        const orient = (screen.orientation || {}).type || '';
+        const winOr = typeof window.orientation !== 'undefined' ? window.orientation : null;
+        const isLandscape = orient.includes('landscape') || (winOr !== null && Math.abs(winOr) === 90);
+
+        let steer = 0;
+        if (isLandscape) {
+            steer = (deg > 0 ? deg - 90 : deg + 90) * 2;
+        } else {
+            steer = deg * 2;
+        }
+
+        updateSteerAngle(steer);
+    }
+
+    // 3. Touch Drag Steering Fallback
+    function handleTouchSteer(e) {
+        const rect = touchSteerArea.getBoundingClientRect();
+        const touchX = e.touches ? e.touches[0].clientX : e.clientX;
+        const relativeX = touchX - rect.left;
+        const pct = (relativeX / rect.width); // 0..1
+        let steer = (pct - 0.5) * 2 * MAX_STEER_ANGLE; // -90..90
+        updateSteerAngle(steer);
+    }
+
+    touchSteerArea.addEventListener('touchmove', handleTouchSteer, { passive: true });
+    touchSteerArea.addEventListener('touchstart', handleTouchSteer, { passive: true });
+    touchSteerArea.addEventListener('touchend', () => updateSteerAngle(0));
+
+    function sendTelemetry() {
+        if (isConnected && ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+                steer: steeringAngle,
+                gearUp: isGearUpPressed ? 1 : 0,
+                gearDown: isGearDownPressed ? 1 : 0,
+                steerEnabled: true
+            }));
+        }
+    }
+
+    // Setup Touch Buttons
+    function bindButton(btn, callback) {
+        const press = (e) => {
+            e.preventDefault();
+            callback(true);
+            btn.classList.add('btn-active');
+            if (navigator.vibrate) navigator.vibrate(30);
             sendTelemetry();
+        };
+        const release = (e) => {
+            e.preventDefault();
+            callback(false);
+            btn.classList.remove('btn-active');
+            sendTelemetry();
+        };
+
+        btn.addEventListener('touchstart', press, { passive: false });
+        btn.addEventListener('touchend', release, { passive: false });
+        btn.addEventListener('touchcancel', release, { passive: false });
+        btn.addEventListener('mousedown', press);
+        btn.addEventListener('mouseup', release);
+        btn.addEventListener('mouseleave', release);
+    }
+
+    bindButton(btnGearUp, (val) => isGearUpPressed = val);
+    bindButton(btnGearDown, (val) => isGearDownPressed = val);
+
+    // Start Driving Button Trigger
+    btnStart.addEventListener('click', () => {
+        // Request iOS 13+ permission if supported
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission()
+                .then(state => {
+                    if (state === 'granted') {
+                        window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+                        window.addEventListener('devicemotion', handleMotion, { passive: true });
+                    }
+                })
+                .catch(console.error);
+        } else {
+            window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+            window.addEventListener('devicemotion', handleMotion, { passive: true });
         }
+        
+        connectWebSocket();
+        btnStart.innerText = "CONNECTING...";
+        
+        setInterval(sendTelemetry, 50); 
+    });
 
-        function updateUI() {
-            let percent = ((steeringAngle + MAX_STEER_ANGLE) / (MAX_STEER_ANGLE * 2)) * 100;
-            steerIndicator.style.left = `${percent}%`;
-            angleText.innerText = `${steeringAngle >= 0 ? '+' : ''}${steeringAngle.toFixed(1)}°`;
-        }
-
-        function sendTelemetry() {
-            if (isConnected && ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    steer: steeringAngle,
-                    gearUp: isGearUpPressed ? 1 : 0,
-                    gearDown: isGearDownPressed ? 1 : 0,
-                    steerEnabled: true
-                }));
-            }
-        }
-
-        // Button Event Listeners
-        function setupButton(btn, stateVarCallback) {
-            const press = (e) => {
-                e.preventDefault();
-                stateVarCallback(true);
-                btn.classList.add('active');
-                if (navigator.vibrate) navigator.vibrate(30);
-                sendTelemetry();
-            };
-            const release = (e) => {
-                e.preventDefault();
-                stateVarCallback(false);
-                btn.classList.remove('active');
-                sendTelemetry();
-            };
-
-            btn.addEventListener('touchstart', press, { passive: false });
-            btn.addEventListener('touchend', release, { passive: false });
-            btn.addEventListener('touchcancel', release, { passive: false });
-            btn.addEventListener('mousedown', press);
-            btn.addEventListener('mouseup', release);
-            btn.addEventListener('mouseleave', release);
-        }
-
-        setupButton(btnGearUp, (val) => isGearUpPressed = val);
-        setupButton(btnGearDown, (val) => isGearDownPressed = val);
-
-        btnStart.addEventListener('click', () => {
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-                        }
-                    })
-                    .catch(console.error);
-            } else {
-                window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-            }
-            
-            connectWebSocket();
-            btnStart.innerText = "CONNECTING...";
-            
-            setInterval(sendTelemetry, 50); 
-        });
-
-        // Prevent context menu & pull-to-refresh
-        window.oncontextmenu = function(e) { e.preventDefault(); };
-        document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
-    </script>
+    window.oncontextmenu = (e) => e.preventDefault();
+</script>
 </body>
 </html>
