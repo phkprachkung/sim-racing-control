@@ -5,519 +5,430 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Sim Racing Control Pad</title>
+<title>Mobile Steering Wheel</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    :root {
+        --bg-deep: #0d0d0d;
+        --bg-panel: #141414;
+        --bg-card: #1a1a1a;
+        --accent: #E4002B;
+        --accent-dim: #8B0018;
+        --text-main: #FFFFFF;
+        --text-sub: #888888;
+        --green: #2ECC71;
+        --border: #2a2a2a;
+    }
 
-  :root {
-    --bg-dark: #070c14;
-    --card-bg: rgba(14, 25, 42, 0.75);
-    --card-border: #132b45;
-    --cyan: #00d2ff;
-    --cyan-glow: rgba(0, 210, 255, 0.35);
-    --text-color: #8da4be;
-    --text-active: #ffffff;
-  }
+    * {
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
 
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-deep);
+        color: var(--text-main);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+        touch-action: manipulation;
+    }
 
-  html, body {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    background: var(--bg-dark);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: var(--text-color);
-    touch-action: none;
-  }
+    /* Header */
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        background-color: var(--bg-panel);
+        border-bottom: 2px solid var(--accent);
+        flex-shrink: 0;
+    }
 
-  /* Full Screen Layout Container */
-  #controller {
-    display: grid;
-    grid-template-columns: 2.2fr 1fr 1fr 1fr 2.5fr;
-    grid-template-rows: auto 1fr 1.1fr;
-    gap: 12px;
-    width: 100vw;
-    height: 100vh;
-    padding: 12px 16px;
-    position: relative;
-    background: radial-gradient(circle at 50% 50%, #0d1a2d 0%, #050910 100%);
-  }
+    .title {
+        font-weight: bold;
+        font-size: 1.1rem;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-  /* Top Fullscreen Header Trigger */
-  #header-bar {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 18px;
-    cursor: pointer;
-  }
-  .dots-icon {
-    display: flex;
-    gap: 4px;
-  }
-  .dots-icon div {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #254668;
-    transition: background 0.2s;
-  }
-  #header-bar:active .dots-icon div {
-    background: var(--cyan);
-  }
+    .btn-fullscreen {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-main);
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.1s;
+    }
 
-  /* Shared Card Styling */
-  .card {
-    background: var(--card-bg);
-    border: 1.2px solid var(--card-border);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(10px);
-    transition: all 0.1s ease;
-  }
-  .card.active {
-    border-color: var(--cyan);
-    box-shadow: 0 0 15px var(--cyan-glow), inset 0 0 10px rgba(0, 210, 255, 0.2);
-  }
+    .btn-fullscreen:active {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
 
-  /* Custom Small Buttons: c3, c2, c1 */
-  .btn-c {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-color);
-  }
+    .status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: var(--text-sub);
+    }
 
-  /* Upshift & Downshift Large Buttons */
-  #btn-upshift {
-    grid-column: 4 / 6;
-    grid-row: 1 / 3;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-color);
-  }
-  #btn-downshift {
-    grid-column: 2 / 5;
-    grid-row: 3 / 4;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-color);
-  }
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--accent);
+    }
+    
+    .status-dot.connected {
+        background-color: var(--green);
+        box-shadow: 0 0 8px var(--green);
+    }
 
-  /* Vertical Slider Containers (Left / Right) */
-  .slider-card {
-    border-radius: 90px;
-    position: relative;
-    overflow: hidden;
-  }
-  #left-slider-card {
-    grid-column: 1 / 2;
-    grid-row: 2 / 4;
-  }
-  #right-slider-card {
-    grid-column: 5 / 6;
-    grid-row: 2 / 4;
-  }
+    /* Main Content */
+    .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+        padding: 20px;
+        position: relative;
+    }
 
-  /* Slider Internal Elements */
-  .slider-track {
-    position: absolute;
-    top: 25px;
-    bottom: 25px;
-    left: 50%;
-    width: 6px;
-    transform: translateX(-50%);
-    background: #0d2238;
-    border-radius: 4px;
-    overflow: visible;
-  }
-  .slider-fill {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 0%;
-    background: var(--cyan);
-    box-shadow: 0 0 10px var(--cyan);
-    border-radius: 4px;
-  }
-  .slider-handle {
-    position: absolute;
-    bottom: 0%;
-    left: 50%;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--cyan);
-    box-shadow: 0 0 12px var(--cyan);
-    transform: translate(-50%, 50%);
-  }
-  .slider-base-line {
-    position: absolute;
-    bottom: 22px;
-    left: 50%;
-    width: 30px;
-    height: 3px;
-    background: var(--cyan);
-    transform: translateX(-50%);
-    border-radius: 2px;
-  }
+    /* Steering Angle & Bar */
+    .steering-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 500px;
+    }
 
-  /* Middle Steer Card */
-  #steer-card {
-    grid-column: 2 / 4;
-    grid-row: 2 / 3;
-    flex-direction: column;
-    gap: 8px;
-    max-height: 85px;
-    align-self: center;
-    border-radius: 14px;
-  }
-  #steer-card span {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--text-color);
-  }
+    .angle-text {
+        font-family: 'Consolas', monospace;
+        font-size: 2.8rem;
+        font-weight: bold;
+        color: var(--accent);
+        text-shadow: 0 0 15px rgba(228, 0, 43, 0.4);
+        margin-bottom: 12px;
+    }
 
-  /* Toggle Switch */
-  .switch {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-  }
-  .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-  .slider-toggle {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background-color: #122438;
-    transition: .3s;
-    border-radius: 24px;
-    border: 1px solid #1a3958;
-  }
-  .slider-toggle:before {
-    position: absolute;
-    content: "";
-    height: 16px;
-    width: 16px;
-    left: 3px;
-    bottom: 3px;
-    background-color: #ffffff;
-    transition: .3s;
-    border-radius: 50%;
-  }
-  input:checked + .slider-toggle {
-    background-color: #005f78;
-    border-color: var(--cyan);
-  }
-  input:checked + .slider-toggle:before {
-    transform: translateX(20px);
-    background-color: var(--cyan);
-    box-shadow: 0 0 8px var(--cyan);
-  }
+    .steering-container {
+        width: 90%;
+        height: 16px;
+        background-color: var(--bg-panel);
+        border-radius: 8px;
+        position: relative;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+        border: 1px solid var(--border);
+    }
 
-  /* Status Indicator */
-  #status-indicator {
-    position: absolute;
-    bottom: 6px;
-    right: 16px;
-    font-size: 0.65rem;
-    color: #2b4868;
-    letter-spacing: 1px;
-  }
+    .steering-center {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 2px;
+        background-color: var(--text-sub);
+        transform: translateX(-50%);
+    }
+
+    .steering-indicator {
+        position: absolute;
+        top: -4px;
+        left: 50%;
+        width: 24px;
+        height: 24px;
+        background-color: var(--accent);
+        border-radius: 50%;
+        transform: translateX(-50%);
+        transition: left 0.05s ease-out;
+        box-shadow: 0 0 12px var(--accent);
+    }
+
+    /* Gear Controls */
+    .controls {
+        display: flex;
+        width: 100%;
+        max-width: 600px;
+        justify-content: center;
+        gap: 24px;
+        flex: 1;
+        max-height: 220px;
+        margin-top: 10px;
+    }
+
+    .gear-btn {
+        flex: 1;
+        background-color: var(--bg-panel);
+        border: 2px solid var(--border);
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        font-weight: bold;
+        color: var(--text-sub);
+        transition: all 0.08s ease;
+        cursor: pointer;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+    }
+
+    .gear-btn span.label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        color: var(--text-sub);
+        margin-top: 4px;
+    }
+
+    .gear-btn:active, .gear-btn.active {
+        background-color: var(--accent-dim);
+        color: var(--text-main);
+        border-color: var(--accent);
+        transform: scale(0.96);
+        box-shadow: 0 0 20px rgba(228, 0, 43, 0.5);
+    }
+
+    .gear-btn:active span.label, .gear-btn.active span.label {
+        color: var(--text-main);
+    }
+
+    /* Start Overlay */
+    .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(13, 13, 13, 0.95);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        backdrop-filter: blur(5px);
+    }
+
+    .btn-start {
+        padding: 16px 48px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        letter-spacing: 1px;
+        background-color: var(--accent);
+        color: var(--text-main);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 0 20px rgba(228, 0, 43, 0.6);
+        transition: background 0.15s;
+    }
+    
+    .btn-start:active {
+        background-color: var(--accent-dim);
+    }
+
 </style>
 </head>
 <body>
 
-<div id="controller">
-  <!-- Top Fullscreen Bar -->
-  <div id="header-bar">
-    <div class="dots-icon">
-      <div></div><div></div><div></div>
+    <header>
+        <div class="title">
+            <span>MOBILE WHEEL</span>
+            <button id="btnFullscreen" class="btn-fullscreen">⛶ FULLSCREEN</button>
+        </div>
+        <div class="status">
+            <div id="statusDot" class="status-dot"></div>
+            <span id="statusText">DISCONNECTED</span>
+        </div>
+    </header>
+
+    <div class="main">
+        <!-- Start Overlay -->
+        <div id="overlay" class="overlay">
+            <p style="margin-bottom: 24px; text-align: center; color: var(--text-sub); line-height: 1.6;">
+                Tap below to enable Gyroscope & Connection<br>
+                (Hold phone horizontally like a steering wheel)
+            </p>
+            <button id="btnStart" class="btn-start">START DRIVING</button>
+        </div>
+
+        <!-- Steering Readout -->
+        <div class="steering-section">
+            <div id="angleText" class="angle-text">0.0°</div>
+            <div class="steering-container">
+                <div class="steering-center"></div>
+                <div id="steerIndicator" class="steering-indicator"></div>
+            </div>
+        </div>
+
+        <!-- Gear Shift Buttons -->
+        <div class="controls">
+            <div id="btnGearDown" class="gear-btn">
+                −
+                <span class="label">SHIFT DOWN</span>
+            </div>
+            <div id="btnGearUp" class="gear-btn">
+                +
+                <span class="label">SHIFT UP</span>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Custom Buttons Top Left -->
-  <div class="card btn-c" id="btn-c3">c3</div>
-  <div class="card btn-c" id="btn-c2">c2</div>
-  <div class="card btn-c" id="btn-c1">c1</div>
+    <script>
+        let ws = null;
+        let isConnected = false;
+        let steeringAngle = 0;
+        const MAX_STEER_ANGLE = 90; // degrees
 
-  <!-- Upshift Button Top Right -->
-  <div class="card" id="btn-upshift">upshift</div>
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const overlay = document.getElementById('overlay');
+        const btnStart = document.getElementById('btnStart');
+        const btnFullscreen = document.getElementById('btnFullscreen');
+        
+        const steerIndicator = document.getElementById('steerIndicator');
+        const angleText = document.getElementById('angleText');
+        
+        const btnGearUp = document.getElementById('btnGearUp');
+        const btnGearDown = document.getElementById('btnGearDown');
 
-  <!-- Left Slider (Brake/Clutch) -->
-  <div class="card slider-card" id="left-slider-card">
-    <div class="slider-track">
-      <div class="slider-fill" id="left-fill"></div>
-      <div class="slider-handle" id="left-handle"></div>
-    </div>
-    <div class="slider-base-line"></div>
-  </div>
+        let isGearUpPressed = false;
+        let isGearDownPressed = false;
 
-  <!-- Center Steer Toggle Card -->
-  <div class="card" id="steer-card">
-    <span>steer</span>
-    <label class="switch">
-      <input type="checkbox" id="steer-toggle" checked>
-      <span class="slider-toggle"></span>
-    </label>
-  </div>
+        // Fullscreen Trigger
+        btnFullscreen.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        });
 
-  <!-- Right Slider (Throttle) -->
-  <div class="card slider-card" id="right-slider-card">
-    <div class="slider-track">
-      <div class="slider-fill" id="right-fill"></div>
-      <div class="slider-handle" id="right-handle"></div>
-    </div>
-    <div class="slider-base-line"></div>
-  </div>
+        function connectWebSocket() {
+            const wsUrl = `ws://${window.location.hostname}:8765`;
+            ws = new WebSocket(wsUrl);
 
-  <!-- Downshift Button Bottom Middle -->
-  <div class="card" id="btn-downshift">downshift</div>
+            ws.onopen = () => {
+                isConnected = true;
+                statusDot.classList.add('connected');
+                statusText.innerText = 'CONNECTED';
+                overlay.style.display = 'none';
+            };
 
-  <div id="status-indicator">OFFLINE</div>
-</div>
+            ws.onclose = () => {
+                isConnected = false;
+                statusDot.classList.remove('connected');
+                statusText.innerText = 'DISCONNECTED';
+                setTimeout(connectWebSocket, 1500);
+            };
 
-<script>
-  // ── State ─────────────────────────────────────────────────────────────
-  let ws = null;
-  let isConnected = false;
+            ws.onerror = (err) => {
+                if (ws) ws.close();
+            };
+        }
 
-  let steerAngle = 0;
-  let steerEnabled = true;
+        function handleOrientation(event) {
+            let angle = 0;
+            const orient = (screen.orientation || {}).type || '';
+            const winOr = typeof window.orientation !== 'undefined' ? window.orientation : null;
+            const isLandscape = orient.includes('landscape') || (winOr !== null && Math.abs(winOr) === 90);
 
-  let isGearUp = false;
-  let isGearDown = false;
+            if (isLandscape) {
+                angle = event.beta ?? 0;
+                if (orient === 'landscape-secondary' || winOr === -90) angle = -angle;
+            } else {
+                angle = event.gamma ?? 0;
+            }
 
-  let isC1 = false;
-  let isC2 = false;
-  let isC3 = false;
+            // Clamp -90..90
+            angle = Math.max(-MAX_STEER_ANGLE, Math.min(MAX_STEER_ANGLE, angle));
+            steeringAngle = angle;
+            
+            updateUI();
+            sendTelemetry();
+        }
 
-  let leftSliderVal = 0;   // Brake/Clutch 0..100
-  let rightSliderVal = 0;  // Throttle 0..100
+        function updateUI() {
+            let percent = ((steeringAngle + MAX_STEER_ANGLE) / (MAX_STEER_ANGLE * 2)) * 100;
+            steerIndicator.style.left = `${percent}%`;
+            angleText.innerText = `${steeringAngle >= 0 ? '+' : ''}${steeringAngle.toFixed(1)}°`;
+        }
 
-  const statusIndicator = document.getElementById('status-indicator');
-  const steerToggle = document.getElementById('steer-toggle');
-  const headerBar = document.getElementById('header-bar');
+        function sendTelemetry() {
+            if (isConnected && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    steer: steeringAngle,
+                    gearUp: isGearUpPressed ? 1 : 0,
+                    gearDown: isGearDownPressed ? 1 : 0,
+                    steerEnabled: true
+                }));
+            }
+        }
 
-  // ── Fullscreen toggle ─────────────────────────────────────────────────
-  headerBar.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen().catch(() => {});
-    }
-  });
+        // Button Event Listeners
+        function setupButton(btn, stateVarCallback) {
+            const press = (e) => {
+                e.preventDefault();
+                stateVarCallback(true);
+                btn.classList.add('active');
+                if (navigator.vibrate) navigator.vibrate(30);
+                sendTelemetry();
+            };
+            const release = (e) => {
+                e.preventDefault();
+                stateVarCallback(false);
+                btn.classList.remove('active');
+                sendTelemetry();
+            };
 
-  steerToggle.addEventListener('change', (e) => {
-    steerEnabled = e.target.checked;
-    sendTelemetry();
-  });
+            btn.addEventListener('touchstart', press, { passive: false });
+            btn.addEventListener('touchend', release, { passive: false });
+            btn.addEventListener('touchcancel', release, { passive: false });
+            btn.addEventListener('mousedown', press);
+            btn.addEventListener('mouseup', release);
+            btn.addEventListener('mouseleave', release);
+        }
 
-  // ── WebSocket Connection ──────────────────────────────────────────────
-  function connectWS() {
-    const wsUrl = `ws://${window.location.hostname}:8765`;
-    ws = new WebSocket(wsUrl);
+        setupButton(btnGearUp, (val) => isGearUpPressed = val);
+        setupButton(btnGearDown, (val) => isGearDownPressed = val);
 
-    ws.onopen = () => {
-      isConnected = true;
-      statusIndicator.innerText = 'CONNECTED';
-      statusIndicator.style.color = '#00d2ff';
-    };
+        btnStart.addEventListener('click', () => {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+            }
+            
+            connectWebSocket();
+            btnStart.innerText = "CONNECTING...";
+            
+            setInterval(sendTelemetry, 50); 
+        });
 
-    ws.onclose = () => {
-      isConnected = false;
-      statusIndicator.innerText = 'DISCONNECTED';
-      statusIndicator.style.color = '#e4002b';
-      setTimeout(connectWS, 1500);
-    };
-
-    ws.onerror = () => {
-      if (ws) ws.close();
-    };
-  }
-
-  function sendTelemetry() {
-    if (isConnected && ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({
-        steer: steerAngle,
-        steerEnabled: steerEnabled,
-        gearUp: isGearUp ? 1 : 0,
-        gearDown: isGearDown ? 1 : 0,
-        throttle: rightSliderVal,
-        brake: leftSliderVal,
-        c1: isC1 ? 1 : 0,
-        c2: isC2 ? 1 : 0,
-        c3: isC3 ? 1 : 0
-      }));
-    }
-  }
-
-  // ── Gyroscope Steering Handling ───────────────────────────────────────
-  function handleOrientation(e) {
-    if (!steerEnabled) return;
-
-    let angle = 0;
-    const orient = (screen.orientation || {}).type || '';
-    const winOr = typeof window.orientation !== 'undefined' ? window.orientation : null;
-    const isLandscape = orient.includes('landscape') || (winOr !== null && Math.abs(winOr) === 90);
-
-    if (isLandscape) {
-      angle = e.beta ?? 0;
-      if (orient === 'landscape-secondary' || winOr === -90) angle = -angle;
-    } else {
-      angle = e.gamma ?? 0;
-    }
-
-    // Clamp -90..90
-    angle = Math.max(-90, Math.min(90, angle));
-    steerAngle = angle;
-    sendTelemetry();
-  }
-
-  // Request gyro permission on first touch/click anywhere
-  function initGyro() {
-    if (typeof DeviceOrientationEvent !== 'undefined' &&
-        typeof DeviceOrientationEvent.requestPermission === 'function') {
-      DeviceOrientationEvent.requestPermission()
-        .then(state => {
-          if (state === 'granted') {
-            window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-          }
-        })
-        .catch(console.error);
-    } else {
-      window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-    }
-  }
-
-  document.addEventListener('touchstart', initGyro, { once: true });
-  document.addEventListener('click', initGyro, { once: true });
-
-  // ── Button Listener Helper ────────────────────────────────────────────
-  function bindButton(id, stateSetter) {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    const press = (e) => {
-      e.preventDefault();
-      stateSetter(true);
-      el.classList.add('active');
-      if (navigator.vibrate) navigator.vibrate(25);
-      sendTelemetry();
-    };
-
-    const release = (e) => {
-      e.preventDefault();
-      stateSetter(false);
-      el.classList.remove('active');
-      sendTelemetry();
-    };
-
-    el.addEventListener('touchstart', press, { passive: false });
-    el.addEventListener('touchend', release, { passive: false });
-    el.addEventListener('touchcancel', release, { passive: false });
-    el.addEventListener('mousedown', press);
-    el.addEventListener('mouseup', release);
-    el.addEventListener('mouseleave', release);
-  }
-
-  bindButton('btn-upshift', (v) => isGearUp = v);
-  bindButton('btn-downshift', (v) => isGearDown = v);
-  bindButton('btn-c1', (v) => isC1 = v);
-  bindButton('btn-c2', (v) => isC2 = v);
-  bindButton('btn-c3', (v) => isC3 = v);
-
-  // ── Vertical Slider Controller Helper ──────────────────────────────────
-  function bindSlider(cardId, fillId, handleId, valueSetter) {
-    const card = document.getElementById(cardId);
-    const fill = document.getElementById(fillId);
-    const handle = document.getElementById(handleId);
-
-    function updateFromY(clientY) {
-      const rect = card.getBoundingClientRect();
-      const top = rect.top + 25;
-      const bottom = rect.bottom - 25;
-      const totalH = bottom - top;
-
-      let clampedY = Math.max(top, Math.min(bottom, clientY));
-      let pct = ((bottom - clampedY) / totalH) * 100;
-      pct = Math.max(0, Math.min(100, pct));
-
-      fill.style.height = `${pct}%`;
-      handle.style.bottom = `${pct}%`;
-
-      valueSetter(Math.round(pct));
-      sendTelemetry();
-    }
-
-    function resetSlider() {
-      fill.style.height = `0%`;
-      handle.style.bottom = `0%`;
-      valueSetter(0);
-      sendTelemetry();
-    }
-
-    card.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      updateFromY(e.touches[0].clientY);
-    }, { passive: false });
-
-    card.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      updateFromY(e.touches[0].clientY);
-    }, { passive: false });
-
-    card.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      resetSlider();
-    }, { passive: false });
-
-    card.addEventListener('touchcancel', (e) => {
-      e.preventDefault();
-      resetSlider();
-    }, { passive: false });
-
-    let isMouseDown = false;
-    card.addEventListener('mousedown', (e) => {
-      isMouseDown = true;
-      updateFromY(e.clientY);
-    });
-    window.addEventListener('mousemove', (e) => {
-      if (isMouseDown) updateFromY(e.clientY);
-    });
-    window.addEventListener('mouseup', () => {
-      if (isMouseDown) {
-        isMouseDown = false;
-        resetSlider();
-      }
-    });
-  }
-
-  bindSlider('left-slider-card', 'left-fill', 'left-handle', (v) => leftSliderVal = v);
-  bindSlider('right-slider-card', 'right-fill', 'right-handle', (v) => rightSliderVal = v);
-
-  // ── Heartbeat Interval ────────────────────────────────────────────────
-  setInterval(sendTelemetry, 50);
-
-  // ── Init WebSocket ───────────────────────────────────────────────────
-  connectWS();
-</script>
+        // Prevent context menu & pull-to-refresh
+        window.oncontextmenu = function(e) { e.preventDefault(); };
+        document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+    </script>
 </body>
 </html>
