@@ -279,7 +279,13 @@ class MobileServer:
                     self._on_data(
                         data.get('steer', 0),
                         data.get('gearUp', 0),
-                        data.get('gearDown', 0)
+                        data.get('gearDown', 0),
+                        data.get('throttle', 0),
+                        data.get('brake', 0),
+                        data.get('c1', 0),
+                        data.get('c2', 0),
+                        data.get('c3', 0),
+                        data.get('steerEnabled', True)
                     )
                 except Exception:
                     pass
@@ -287,6 +293,39 @@ class MobileServer:
             pass
         finally:
             self._on_status("RUNNING — WAITING", ORANGE_WARN)
+
+    def _on_mobile_data(self, steer, gear_up, gear_down, throttle=0, brake=0, c1=0, c2=0, c3=0, steer_enabled=True):
+        """Called from MobileServer thread — post to main thread."""
+        self._post(self._process_mobile, steer, gear_up, gear_down, throttle, brake, c1, c2, c3, steer_enabled)
+
+    def _process_mobile(self, raw_steer, gear_up, gear_down, throttle=0, brake=0, c1=0, c2=0, c3=0, steer_enabled=True):
+        if self.vjoy_dev:
+            if steer_enabled:
+                raw_steer -= self.config.get("steer_center", 0)
+                if self.invert_steer_var.get():
+                    raw_steer = -raw_steer
+                S = 90.0
+                vjoy_steer = map_value(raw_steer, -S, S, 0, VJOY_MAX)
+                self.vjoy_dev.set_axis(pyvjoy.HID_USAGE_Z, vjoy_steer)
+                norm = (raw_steer + S) / (S * 2)
+                self.bar_steer.set(max(0.0, min(1.0, norm)))
+                self.var_steer.set(f"{raw_steer:.1f}°")
+            
+            if throttle > 0 or brake > 0:
+                t_val = map_value(throttle, 0, 100, 0, VJOY_MAX)
+                b_val = map_value(brake, 0, 100, 0, VJOY_MAX)
+                self.vjoy_dev.set_axis(pyvjoy.HID_USAGE_X, t_val)
+                self.vjoy_dev.set_axis(pyvjoy.HID_USAGE_Y, b_val)
+                self.bar_throttle.set(throttle / 100.0)
+                self.bar_brake.set(brake / 100.0)
+                self.var_thr.set(f"{throttle}%")
+                self.var_brk.set(f"{brake}%")
+
+            self.vjoy_dev.set_button(1, 1 if gear_up else 0)
+            self.vjoy_dev.set_button(2, 1 if gear_down else 0)
+            self.vjoy_dev.set_button(3, 1 if c1 else 0)
+            self.vjoy_dev.set_button(4, 1 if c2 else 0)
+            self.vjoy_dev.set_button(5, 1 if c3 else 0)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
