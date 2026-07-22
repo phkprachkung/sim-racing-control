@@ -5,13 +5,13 @@
     "baudrate_wheel": "115200",
     "throttle_min": 49.0,
     "brake_min": 49.0,
-    "steer_min": -1440.0,
-    "steer_max": 1440.0,
+    "steer_angle": 564.1463414634146,
+    "steer_center": 3.292682926829272,
     "ffb_gain": 100.0,
     "invert_steer": false,
     "invert_ffb": false,
+    "steer_min": -1440.0,
+    "steer_max": 1440.0,
     "throttle_max": 100,
-    "brake_max": 100,
-    "steer_angle": 564.1463414634146,
-    "steer_center": 3.292682926829272
+    "brake_max": 100
 }

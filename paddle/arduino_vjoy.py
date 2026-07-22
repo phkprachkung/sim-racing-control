@@ -235,12 +235,12 @@ class MobileServer:
 
     def _run(self):
         # --- HTTP ---
-        handler = functools.partial(
-            http.server.SimpleHTTPRequestHandler,
-            directory=self._mobile_dir
-        )
+        mobile_dir = self._mobile_dir
 
-        class SilentHandler(handler):
+        class SilentHandler(http.server.SimpleHTTPRequestHandler):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, directory=mobile_dir, **kwargs)
+
             def log_message(self, format, *args):
                 pass  # Suppress HTTP log spam
 
