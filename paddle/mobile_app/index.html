@@ -1,383 +1,451 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mobile Steering Wheel</title>
-    <style>
-        :root {
-            --bg-deep: #0d0d0d;
-            --bg-panel: #141414;
-            --accent: #E4002B;
-            --accent-dim: #8B0018;
-            --text-main: #FFFFFF;
-            --text-sub: #888888;
-            --green: #2ECC71;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Mobile Wheel · Sim Racing Control</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
 
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+  :root {
+    --bg:        #0a0a0a;
+    --surface:   #111111;
+    --border:    #1f1f1f;
+    --accent:    #E4002B;
+    --accent-lo: #8B0018;
+    --green:     #22c55e;
+    --orange:    #f97316;
+    --text:      #ffffff;
+    --muted:     #555555;
+  }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-            touch-action: manipulation;
-        }
+  * { box-sizing: border-box; margin: 0; padding: 0;
+      user-select: none; -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent; }
 
-        /* Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: var(--bg-panel);
-            border-bottom: 2px solid var(--accent);
-        }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--bg);
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text);
+    touch-action: none;
+  }
 
-        .title {
-            font-weight: bold;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
-        }
+  /* ── Layout ── */
+  #app {
+    display: flex; flex-direction: column;
+    width: 100%; height: 100%;
+  }
 
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: var(--text-sub);
-        }
+  /* ── Header ── */
+  #header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px;
+    background: var(--surface);
+    border-bottom: 1.5px solid var(--accent);
+    flex-shrink: 0;
+  }
+  #header h1 { font-size: 1rem; font-weight: 900; letter-spacing: 2px; }
+  #header h1 span { color: var(--accent); }
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--accent); /* Red when disconnected */
-        }
-        
-        .status-dot.connected {
-            background-color: var(--green);
-        }
+  #conn-pill {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 1px;
+    color: var(--muted); transition: color 0.3s;
+  }
+  #conn-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); transition: background 0.3s;
+  }
+  #conn-pill.connected { color: var(--green); }
+  #conn-pill.connected #conn-dot { background: var(--green);
+    box-shadow: 0 0 8px var(--green); }
 
-        /* Main Content */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
+  /* ── Main content ── */
+  #content {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    gap: 12px; padding: 8px 20px;
+  }
 
-        /* Steering Visualizer */
-        .steering-container {
-            width: 80%;
-            height: 20px;
-            background-color: var(--bg-panel);
-            border-radius: 10px;
-            position: relative;
-            margin-bottom: 40px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-        }
+  /* ── Steering angle display ── */
+  #angle-display {
+    display: flex; flex-direction: column; align-items: center;
+    line-height: 1;
+  }
+  #angle-val {
+    font-size: 3.5rem; font-weight: 900; color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 20px rgba(228,0,43,0.4);
+    transition: color 0.15s;
+    min-width: 5ch; text-align: center;
+  }
+  #angle-label {
+    font-size: 0.6rem; font-weight: 600; letter-spacing: 2px;
+    color: var(--muted); margin-top: 4px;
+  }
 
-        .steering-center {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: 2px;
-            background-color: var(--text-sub);
-            transform: translateX(-50%);
-        }
+  /* ── Arc Steering Visualizer ── */
+  #arc-wrap {
+    width: min(80vw, 300px); flex-shrink: 0;
+  }
+  #arc-svg { width: 100%; height: auto; overflow: visible; }
+  #arc-track { stroke: var(--border); }
+  #arc-fill  { stroke: var(--accent); stroke-linecap: round;
+               filter: drop-shadow(0 0 4px var(--accent));
+               transition: stroke-dashoffset 0.06s linear; }
+  #arc-center-line { stroke: var(--muted); }
+  #arc-thumb {
+    fill: var(--text); filter: drop-shadow(0 0 6px var(--accent));
+    transition: cx 0.06s linear;
+  }
 
-        .steering-indicator {
-            position: absolute;
-            top: -5px;
-            left: 50%;
-            width: 30px;
-            height: 30px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            transform: translateX(-50%);
-            transition: left 0.1s ease-out;
-            box-shadow: 0 0 10px var(--accent);
-        }
+  /* ── Sensitivity ── */
+  #sens-row {
+    display: flex; align-items: center; gap: 10px; width: 80%;
+  }
+  #sens-row label { font-size: 0.65rem; letter-spacing: 1px; color: var(--muted); white-space: nowrap; }
+  #sens-slider {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 2px;
+    background: linear-gradient(to right, var(--accent) var(--val, 50%), var(--border) var(--val, 50%));
+    outline: none;
+  }
+  #sens-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--text);
+    box-shadow: 0 0 6px rgba(228,0,43,0.6);
+  }
+  #sens-val { font-size: 0.7rem; font-weight: 700;
+              color: var(--accent); min-width: 2.5ch; text-align: right; }
 
-        .angle-text {
-            font-family: 'Consolas', monospace;
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent);
-            margin-bottom: 20px;
-        }
+  /* ── Gear buttons ── */
+  #gear-row {
+    display: flex; gap: 16px; width: 100%; justify-content: center;
+    flex-shrink: 0; padding-bottom: 4px;
+  }
+  .gear-btn {
+    flex: 1; max-width: 160px; aspect-ratio: 1.5;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 1.8rem; font-weight: 900; color: var(--muted);
+    transition: all 0.1s;
+    cursor: pointer;
+    position: relative; overflow: hidden;
+  }
+  .gear-btn span.label {
+    font-size: 0.55rem; letter-spacing: 2px; font-weight: 600;
+    color: var(--muted); margin-top: 2px;
+  }
+  .gear-btn::after {
+    content: ''; position: absolute; inset: 0;
+    background: var(--accent); opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .gear-btn.active { border-color: var(--accent); color: var(--text);
+                     transform: scale(0.96); }
+  .gear-btn.active::after { opacity: 0.12; }
 
-        /* Controls */
-        .controls {
-            display: flex;
-            width: 100%;
-            justify-content: space-around;
-            padding: 20px;
-            gap: 20px;
-        }
-
-        .gear-btn {
-            flex: 1;
-            aspect-ratio: 1;
-            max-width: 150px;
-            background-color: var(--bg-panel);
-            border: 2px solid #2a2a2a;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--text-sub);
-            transition: all 0.1s;
-            cursor: pointer;
-        }
-
-        .gear-btn:active {
-            background-color: var(--accent-dim);
-            color: var(--text-main);
-            border-color: var(--accent);
-            transform: scale(0.95);
-        }
-
-        /* Overlay */
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(13, 13, 13, 0.9);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-
-        .btn-start {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            background-color: var(--accent);
-            color: var(--text-main);
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        .btn-start:active {
-            background-color: var(--accent-dim);
-        }
-
-    </style>
+  /* ── Overlay ── */
+  #overlay {
+    position: absolute; inset: 0;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(8px);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 20px; z-index: 50;
+  }
+  #overlay p {
+    font-size: 0.85rem; color: var(--muted);
+    text-align: center; line-height: 1.6; max-width: 280px;
+  }
+  #btn-start {
+    padding: 14px 40px; font-size: 1rem; font-weight: 700;
+    letter-spacing: 2px; background: var(--accent);
+    color: var(--text); border: none; border-radius: 8px;
+    cursor: pointer; transition: background 0.2s;
+  }
+  #btn-start:active { background: var(--accent-lo); }
+  #overlay-logo {
+    font-size: 0.7rem; letter-spacing: 3px; color: var(--muted);
+    font-weight: 600;
+  }
+</style>
 </head>
 <body>
+<div id="app">
+  <div id="header">
+    <h1>MOBILE <span>WHEEL</span></h1>
+    <div id="conn-pill">
+      <div id="conn-dot"></div>
+      <span id="conn-text">DISCONNECTED</span>
+    </div>
+  </div>
 
-    <header>
-        <div class="title">MOBILE WHEEL</div>
-        <div class="status">
-            <div id="statusDot" class="status-dot"></div>
-            <span id="statusText">DISCONNECTED</span>
-        </div>
-    </header>
-
-    <div class="main">
-        <div id="overlay" class="overlay">
-            <p style="margin-bottom: 20px; text-align: center; color: var(--text-sub);">
-                Tap below to enable Gyroscope & Connection<br>
-                (Keep phone horizontal like a steering wheel)
-            </p>
-            <button id="btnStart" class="btn-start">START DRIVING</button>
-        </div>
-
-        <div id="angleText" class="angle-text">0.0°</div>
-        
-        <div class="steering-container">
-            <div class="steering-center"></div>
-            <div id="steerIndicator" class="steering-indicator"></div>
-        </div>
-
-        <div class="controls">
-            <div id="btnGearDown" class="gear-btn">-</div>
-            <div id="btnGearUp" class="gear-btn">+</div>
-        </div>
+  <div id="content">
+    <!-- Overlay (before start) -->
+    <div id="overlay">
+      <div id="overlay-logo">SIM RACING CONTROL</div>
+      <p>Tap START to enable gyroscope and connect to PC.<br>Hold phone flat like a steering wheel.</p>
+      <button id="btn-start">START DRIVING</button>
     </div>
 
-    <script>
-        let ws;
-        let isConnected = false;
-        let steeringAngle = 0;
-        const MAX_STEER_ANGLE = 90; // degrees for max turn on phone
+    <!-- Angle readout -->
+    <div id="angle-display">
+      <div id="angle-val">0.0°</div>
+      <div id="angle-label">STEERING ANGLE</div>
+    </div>
 
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
-        const overlay = document.getElementById('overlay');
-        const btnStart = document.getElementById('btnStart');
-        const steerIndicator = document.getElementById('steerIndicator');
-        const angleText = document.getElementById('angleText');
-        
-        const btnGearUp = document.getElementById('btnGearUp');
-        const btnGearDown = document.getElementById('btnGearDown');
+    <!-- Arc visualizer (SVG) -->
+    <div id="arc-wrap">
+      <svg id="arc-svg" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
+        <!-- Track arc -->
+        <path id="arc-track" d="M10,100 A90,90 0 0,1 190,100"
+              fill="none" stroke-width="8" stroke-linecap="round"/>
+        <!-- Fill arc (animated) -->
+        <path id="arc-fill" d="M100,100 A90,90 0 0,1 100,100"
+              fill="none" stroke-width="8" stroke-linecap="round"/>
+        <!-- Center tick -->
+        <line id="arc-center-line" x1="100" y1="92" x2="100" y2="70"
+              stroke-width="2" stroke-linecap="round"/>
+        <!-- Thumb -->
+        <circle id="arc-thumb" cx="100" cy="10" r="7"/>
+      </svg>
+    </div>
 
-        let isGearUpPressed = false;
-        let isGearDownPressed = false;
+    <!-- Sensitivity -->
+    <div id="sens-row">
+      <label>SENSITIVITY</label>
+      <input type="range" id="sens-slider" min="30" max="90" value="60"
+             step="5" style="--val:50%">
+      <span id="sens-val">60°</span>
+    </div>
 
-        function connectWebSocket() {
-            // Assume WebSocket server is running on port 8765 on the same host
-            const wsUrl = `ws://${window.location.hostname}:8765`;
-            ws = new WebSocket(wsUrl);
+    <!-- Gear buttons -->
+    <div id="gear-row">
+      <div class="gear-btn" id="btn-gear-down">
+        −
+        <span class="label">GEAR DOWN</span>
+      </div>
+      <div class="gear-btn" id="btn-gear-up">
+        +
+        <span class="label">GEAR UP</span>
+      </div>
+    </div>
+  </div>
+</div>
 
-            ws.onopen = () => {
-                isConnected = true;
-                statusDot.classList.add('connected');
-                statusText.innerText = 'CONNECTED';
-                overlay.style.display = 'none';
-            };
+<script>
+  // ── State ──────────────────────────────────────────────────────────────
+  let ws = null;
+  let wsRetryDelay = 1000;
+  let isConnected  = false;
+  let steerAngle   = 0;
+  let gearUp       = false;
+  let gearDown     = false;
+  let maxAngle     = 60; // degrees — matches slider default
 
-            ws.onclose = () => {
-                isConnected = false;
-                statusDot.classList.remove('connected');
-                statusText.innerText = 'DISCONNECTED';
-                setTimeout(connectWebSocket, 2000); // Reconnect loop
-            };
+  // ── Elements ───────────────────────────────────────────────────────────
+  const overlay     = document.getElementById('overlay');
+  const btnStart    = document.getElementById('btn-start');
+  const connPill    = document.getElementById('conn-pill');
+  const connDot     = document.getElementById('conn-dot');
+  const connText    = document.getElementById('conn-text');
+  const angleVal    = document.getElementById('angle-val');
+  const arcFill     = document.getElementById('arc-fill');
+  const arcThumb    = document.getElementById('arc-thumb');
+  const sensSlider  = document.getElementById('sens-slider');
+  const sensVal     = document.getElementById('sens-val');
+  const gearUpBtn   = document.getElementById('btn-gear-up');
+  const gearDownBtn = document.getElementById('btn-gear-down');
 
-            ws.onerror = (err) => {
-                console.error("WebSocket Error:", err);
-            };
-        }
+  // ── Arc geometry ───────────────────────────────────────────────────────
+  // The path goes from (10,100) to (190,100) — a semicircle, r=90, cx=100,cy=100
+  const ARC_CX = 100, ARC_CY = 100, ARC_R = 90;
+  const ARC_START_DEG = 180; // leftmost
+  const ARC_END_DEG   = 0;   // rightmost
+  // Total arc length:
+  const arcLen = Math.PI * ARC_R; // semicircle = π * r
 
-        function handleOrientation(event) {
-            // Use gamma (left-to-right tilt in portrait) or beta (in landscape)
-            // Assuming phone is held in landscape mode like a steering wheel:
-            // event.beta is front-to-back tilt in portrait, but in landscape it's the steering rotation!
-            
-            // Let's rely on standard orientation handling. When held landscape:
-            // beta is rotation around the short axis (steering).
-            // Actually, in landscape, 'beta' is steering if locked. Let's use beta.
-            // Depending on device and orientation lock, this might vary. 
-            // A common robust way for steering wheel:
-            
-            let angle = event.beta; 
-            
-            // If device is in portrait, gamma is steering.
-            // Let's check screen orientation
-            let orientation = (screen.orientation || {}).type || screen.mozOrientation || screen.msOrientation;
-            
-            if (orientation === "landscape-primary" || orientation === "landscape-secondary" || Math.abs(window.orientation) === 90) {
-                angle = event.beta;
-                // invert if landscape-secondary
-                if (orientation === "landscape-secondary" || window.orientation === -90) {
-                    angle = -angle;
-                }
-            } else {
-                // Portrait
-                angle = event.gamma;
-            }
+  arcFill.style.strokeDasharray  = arcLen;
+  arcFill.style.strokeDashoffset = arcLen;
 
-            if (angle === null) return; // No sensor
+  function degToRad(d) { return d * Math.PI / 180; }
 
-            // Clamp and process
-            if (angle > MAX_STEER_ANGLE) angle = MAX_STEER_ANGLE;
-            if (angle < -MAX_STEER_ANGLE) angle = -MAX_STEER_ANGLE;
-            
-            steeringAngle = angle;
-            updateUI();
-            sendTelemetry();
-        }
+  function pointOnArc(angleDeg) {
+    // 0° = right (3 o'clock), angles go counter-clockwise from right
+    const rad = degToRad(angleDeg);
+    return {
+      x: ARC_CX + ARC_R * Math.cos(rad),
+      y: ARC_CY - ARC_R * Math.sin(rad) // SVG y-axis is flipped
+    };
+  }
 
-        function updateUI() {
-            // Update indicator position
-            // map -90..90 to 0%..100%
-            let percent = ((steeringAngle + MAX_STEER_ANGLE) / (MAX_STEER_ANGLE * 2)) * 100;
-            steerIndicator.style.left = `${percent}%`;
-            angleText.innerText = `${steeringAngle.toFixed(1)}°`;
-        }
+  function updateArcUI(normalized) {
+    // normalized: -1 (full left) … 0 (center) … +1 (full right)
+    const clamp = Math.max(-1, Math.min(1, normalized));
 
-        function sendTelemetry() {
-            if (isConnected && ws.readyState === WebSocket.OPEN) {
-                const data = {
-                    steer: steeringAngle,
-                    gearUp: isGearUpPressed ? 1 : 0,
-                    gearDown: isGearDownPressed ? 1 : 0
-                };
-                ws.send(JSON.stringify(data));
-            }
-        }
+    // Thumb: map -1..1 → 180°..0° (left to right on the arc)
+    const thumbAngle = 90 + clamp * -90; // 90° is top (center)
+    // Actually: center of arc at 90° (top of semicircle)
+    // left = 180°, center = 90°, right = 0°
+    const deg = 90 - clamp * 90; // 90° at center
+    const pt  = pointOnArc(deg);
+    arcThumb.setAttribute('cx', pt.x);
+    arcThumb.setAttribute('cy', pt.y);
 
-        // Button Event Listeners
-        const setupButton = (btn, stateVarCallback) => {
-            btn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                stateVarCallback(true);
-                sendTelemetry();
-            });
-            btn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                stateVarCallback(false);
-                sendTelemetry();
-            });
-            btn.addEventListener('mousedown', (e) => {
-                stateVarCallback(true);
-                sendTelemetry();
-            });
-            btn.addEventListener('mouseup', (e) => {
-                stateVarCallback(false);
-                sendTelemetry();
-            });
-            btn.addEventListener('mouseleave', (e) => {
-                stateVarCallback(false);
-                sendTelemetry();
-            });
-        };
+    // Fill: offset from center
+    // Full arc = arcLen (π*r). Center point = arcLen/2 from start.
+    // Fill starts at center, extends towards clamp direction.
+    const fillFrac = Math.abs(clamp); // 0..1
+    const fillLen  = fillFrac * (arcLen / 2);
 
-        setupButton(btnGearUp, (val) => isGearUpPressed = val);
-        setupButton(btnGearDown, (val) => isGearDownPressed = val);
+    // Build fill path arc
+    const startPt = pointOnArc(90); // center (top)
+    const endPt   = pt;
 
-        btnStart.addEventListener('click', () => {
-            // Request permission for iOS 13+ devices
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation);
-                        } else {
-                            alert("Gyroscope permission denied.");
-                        }
-                    })
-                    .catch(console.error);
-            } else {
-                // Non iOS 13+ devices
-                window.addEventListener('deviceorientation', handleOrientation);
-            }
-            
-            connectWebSocket();
-            btnStart.innerText = "CONNECTING...";
-            
-            // Periodically send data even if orientation doesn't change
-            setInterval(sendTelemetry, 50); 
-        });
+    const large  = fillFrac > 0.5 ? 0 : 0;
+    const sweep  = clamp > 0 ? 0 : 1; // CW or CCW
 
-        // Prevent context menu
-        window.oncontextmenu = function(event) {
-             event.preventDefault();
-             event.stopPropagation();
-             return false;
-        };
-    </script>
+    arcFill.setAttribute('d',
+      `M${startPt.x.toFixed(2)},${startPt.y.toFixed(2)} ` +
+      `A${ARC_R},${ARC_R} 0 ${large},${sweep} ` +
+      `${endPt.x.toFixed(2)},${endPt.y.toFixed(2)}`
+    );
+    arcFill.style.strokeDasharray  = 'none';
+    arcFill.style.strokeDashoffset = 'none';
+  }
+
+  function updateUI() {
+    const norm = steerAngle / maxAngle;
+    angleVal.textContent = `${steerAngle >= 0 ? '+' : ''}${steerAngle.toFixed(1)}°`;
+    updateArcUI(norm);
+  }
+
+  // ── Sensitivity slider ─────────────────────────────────────────────────
+  sensSlider.addEventListener('input', () => {
+    maxAngle = parseInt(sensSlider.value);
+    sensVal.textContent = `${maxAngle}°`;
+    const pct = (maxAngle - 30) / (90 - 30) * 100;
+    sensSlider.style.setProperty('--val', pct + '%');
+    updateUI();
+  });
+
+  // ── WebSocket ──────────────────────────────────────────────────────────
+  function connect() {
+    const url = `ws://${location.hostname}:8765`;
+    ws = new WebSocket(url);
+
+    ws.onopen = () => {
+      isConnected  = true;
+      wsRetryDelay = 1000;
+      connPill.classList.add('connected');
+      connText.textContent = 'CONNECTED';
+    };
+
+    ws.onclose = () => {
+      isConnected = false;
+      connPill.classList.remove('connected');
+      connText.textContent = 'RECONNECTING…';
+      setTimeout(connect, wsRetryDelay);
+      wsRetryDelay = Math.min(wsRetryDelay * 1.5, 8000); // exponential backoff
+    };
+
+    ws.onerror = () => { ws.close(); };
+  }
+
+  function sendTelemetry() {
+    if (isConnected && ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        steer:    steerAngle,
+        gearUp:   gearUp   ? 1 : 0,
+        gearDown: gearDown ? 1 : 0
+      }));
+    }
+  }
+
+  // ── Gyroscope ──────────────────────────────────────────────────────────
+  function handleOrientation(e) {
+    let angle;
+    const orient = (screen.orientation || {}).type || '';
+    const winOr  = typeof window.orientation !== 'undefined' ? window.orientation : null;
+
+    const isLandscape =
+      orient.includes('landscape') ||
+      (winOr !== null && Math.abs(winOr) === 90);
+
+    if (isLandscape) {
+      // Landscape: beta is the tilt (rotation around the long axis)
+      angle = e.beta ?? 0;
+      if (orient === 'landscape-secondary' || winOr === -90) angle = -angle;
+    } else {
+      // Portrait: gamma is left-right tilt
+      angle = e.gamma ?? 0;
+    }
+
+    // Clamp to maxAngle
+    angle = Math.max(-maxAngle, Math.min(maxAngle, angle));
+    steerAngle = angle;
+    updateUI();
+    sendTelemetry();
+  }
+
+  // ── Gear buttons ───────────────────────────────────────────────────────
+  function makeGearBtn(el, setFn) {
+    const press = (e) => { e.preventDefault(); setFn(true);  sendTelemetry();
+                           el.classList.add('active');
+                           if (navigator.vibrate) navigator.vibrate(30); };
+    const release = (e) => { e.preventDefault(); setFn(false); sendTelemetry();
+                              el.classList.remove('active'); };
+    el.addEventListener('touchstart', press,   { passive: false });
+    el.addEventListener('touchend',   release, { passive: false });
+    el.addEventListener('touchcancel',release, { passive: false });
+    el.addEventListener('mousedown',  press);
+    el.addEventListener('mouseup',    release);
+    el.addEventListener('mouseleave', release);
+  }
+
+  makeGearBtn(gearUpBtn,   (v) => gearUp   = v);
+  makeGearBtn(gearDownBtn, (v) => gearDown = v);
+
+  // ── Telemetry heartbeat (send even when phone is still) ────────────────
+  setInterval(sendTelemetry, 50);
+
+  // ── START button ───────────────────────────────────────────────────────
+  btnStart.addEventListener('click', () => {
+    const startGyro = () => {
+      window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+    };
+
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      // iOS 13+
+      DeviceOrientationEvent.requestPermission()
+        .then(state => {
+          if (state === 'granted') startGyro();
+          else alert('Gyroscope permission denied. Cannot read steering.');
+        })
+        .catch(console.error);
+    } else {
+      startGyro();
+    }
+
+    connect();
+    overlay.style.display = 'none';
+  });
+
+  // ── Prevent scroll / context menu ─────────────────────────────────────
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('touchmove',   e => e.preventDefault(), { passive: false });
+
+  // Initial arc draw
+  updateUI();
+</script>
 </body>
 </html>
